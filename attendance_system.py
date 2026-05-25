@@ -5,39 +5,22 @@ from datetime import datetime
 import os
 import winsound
 
-# =========================
-# SETTINGS
-# =========================
 
 DATABASE_PATH = "database"
 ATTENDANCE_FILE = "attendance.csv"
 
-# =========================
-# CREATE CSV IF NOT EXISTS
-# =========================
+
 
 if not os.path.exists(ATTENDANCE_FILE):
     df = pd.DataFrame(columns=["Name", "Time", "Date"])
     df.to_csv(ATTENDANCE_FILE, index=False)
 
-# =========================
-# PREVENT DUPLICATE ENTRY
-# =========================
-
 marked_names = set()
 
-# =========================
-# START CAMERA
-# =========================
-
-cam = cv2.VideoCapture("http://10.24.202.195:8080/video")
+cam = cv2.VideoCapture(0)
 
 print("Attendance System Started")
 print("Press Q to Quit")
-
-# =========================
-# MAIN LOOP
-# =========================
 
 while True:
 
@@ -45,10 +28,6 @@ while True:
 
     if not ret:
         break
-
-    # =========================
-    # FACE DETECTION
-    # =========================
 
     try:
 
@@ -67,7 +46,7 @@ while True:
             w = facial_area['w']
             h = facial_area['h']
 
-            # Yellow rectangle while detecting
+         
             cv2.rectangle(
                 frame,
                 (x, y),
@@ -83,10 +62,7 @@ while True:
 
             try:
 
-                # =========================
-                # FACE RECOGNITION
-                # =========================
-
+              
                 result = DeepFace.find(
                     img_path="temp.jpg",
                     db_path=DATABASE_PATH,
@@ -120,10 +96,6 @@ while True:
                         2
                     )
 
-                    # =========================
-                    # MARK ATTENDANCE
-                    # =========================
-
                     if name not in marked_names:
 
                         now = datetime.now()
@@ -146,10 +118,6 @@ while True:
 
                         marked_names.add(name)
 
-                        # =========================
-                        # BEEP SOUND
-                        # =========================
-
                         winsound.Beep(1000, 500)
 
                         print(f"Attendance Marked for {name}")
@@ -160,24 +128,14 @@ while True:
     except Exception as e:
         print("Detection Error:", e)
 
-    # =========================
-    # SHOW WINDOW
-    # =========================
+
 
     cv2.imshow("Attendance Detection System", frame)
-
-    # =========================
-    # EXIT
-    # =========================
 
     key = cv2.waitKey(1)
 
     if key == ord('q'):
         break
-
-# =========================
-# CLEANUP
-# =========================
 
 cam.release()
 cv2.destroyAllWindows()
